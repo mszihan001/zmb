@@ -10,9 +10,5 @@ const firebaseConfig = {
   measurementId: "G-DCMHCLBQNK"
 };
 
-try {
-  firebase.initializeApp(firebaseConfig);
-  window.firebaseDatabase = firebase.database();
-} catch (error) {
-  console.error('Firebase initialization failed:', error);
-}
+firebase.initializeApp(firebaseConfig);
+window.firebaseDatabase = firebase.database();

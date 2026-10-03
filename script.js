@@ -5,12 +5,13 @@ const STORE = {
 const defaultProducts = ['রুই','মৃগেল','কাতলা','বাটা','সীলভার','গ্লাসকাপ','স্বরপুটি','পাঙ্গাস','হাংরি','দেশী মাগুর','কৈ','টেংরা','গুলশা','পাবদা'].map((name, i) => ({
   id: `fish-${i + 1}`, name, price: 0, description: 'উন্নতমানের রেনু পোনা', image: ''
 }));
+const fallbackHeroImage = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650"><defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#b9e2ed"/><stop offset="1" stop-color="#eef8e8"/></linearGradient><linearGradient id="water" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2c9b9d"/><stop offset="1" stop-color="#0d5968"/></linearGradient></defs><rect width="900" height="650" fill="url(#sky)"/><circle cx="730" cy="115" r="58" fill="#ffe29a" opacity=".9"/><path d="M0 340 Q180 270 360 350 T720 330 T900 345 V650 H0Z" fill="#75ad67"/><path d="M0 445 Q190 355 390 455 T900 425 V650 H0Z" fill="url(#water)"/><path d="M0 510 Q210 440 430 525 T900 495" fill="none" stroke="#b5e6d3" stroke-width="9" opacity=".65"/><path d="M130 330 Q190 255 270 330 M570 335 Q640 245 720 330" fill="none" stroke="#397a48" stroke-width="25" stroke-linecap="round"/><g fill="#f5faf5" stroke="#075b68" stroke-width="5"><path d="M360 470 q55-55 110 0-55 55-110 0Z"/><path d="M505 555 q45-45 90 0-45 45-90 0Z"/></g><g fill="#075b68"><circle cx="422" cy="463" r="6"/><circle cx="555" cy="550" r="5"/></g><text x="450" y="115" text-anchor="middle" font-family="sans-serif" font-size="34" font-weight="700" fill="#075b68">জিহান মৎস্য বীজাগার</text></svg>')}`;
 const defaultSettings = {
-  heroTitle: 'সুস্থ পোনা, সমৃদ্ধ মাছ চাষ',
-  heroText: 'আপনার পুকুরের জন্য বেছে নিন উন্নতমানের ও সতেজ মাছের রেনু পোনা। মানসম্মত পোনা ও আন্তরিক পরামর্শে আমরা আছি আপনার পাশে।',
-  heroImage: '',
-  adviceTitle: 'সঠিক পোনা বাছাই, সফল চাষের প্রথম ধাপ',
-  adviceText: 'পুকুরের আকার, পানির অবস্থা ও চাষের উদ্দেশ্য অনুযায়ী পোনা নির্বাচন করুন। পোনা ছাড়ার আগে পুকুর প্রস্তুত রাখুন এবং পরিবহনের পর ধীরে ধীরে পানির সঙ্গে মানিয়ে নিন। পরামর্শের জন্য আমাদের সাথে কথা বলুন।',
+  heroTitle: 'পরিচালক\nমোঃ ময়নুল সাদিক (জোহা)',
+  heroText: '',
+  heroImage: fallbackHeroImage,
+  adviceTitle: '',
+  adviceText: '',
   gallery: ['', '', '']
 };
 const read = (key, fallback) => {
@@ -38,6 +39,11 @@ if (!admins.some(admin => admin && String(admin.user).trim().toLowerCase() === '
 let memos = read(STORE.memos, []);
 let customers = read(STORE.customers, {});
 let settings = { ...defaultSettings, ...read(STORE.settings, {}) };
+settings.heroText = '';
+settings.adviceTitle = '';
+settings.adviceText = '';
+if (!settings.heroTitle || settings.heroTitle === 'সুস্থ পোনা, সমৃদ্ধ মাছ চাষ') settings.heroTitle = defaultSettings.heroTitle;
+save(STORE.settings, settings);
 settings.heroSlides = (Array.isArray(settings.heroSlides) ? settings.heroSlides : [settings.heroImage, '', '', '', '', '', '']).slice(0, 7);
 while (settings.heroSlides.length < 7) settings.heroSlides.push('');
 let selectedItems = [];
@@ -84,6 +90,10 @@ function startFirebaseSync() {
       if (data[STORE.customers] && typeof data[STORE.customers] === 'object') customers = data[STORE.customers];
       if (data[STORE.settings] && typeof data[STORE.settings] === 'object') {
         settings = { ...defaultSettings, ...data[STORE.settings] };
+        settings.heroText = '';
+        settings.adviceTitle = '';
+        settings.adviceText = '';
+        if (!settings.heroTitle || settings.heroTitle === 'সুস্থ পোনা, সমৃদ্ধ মাছ চাষ') settings.heroTitle = defaultSettings.heroTitle;
         settings.heroSlides = (Array.isArray(settings.heroSlides) ? settings.heroSlides : [settings.heroImage, '', '', '', '', '', '']).slice(0, 7);
         while (settings.heroSlides.length < 7) settings.heroSlides.push('');
       }
@@ -159,17 +169,13 @@ const translations = {
   'এই নম্বরে কোনো মেমো পাওয়া যায়নি।': 'No memo found with this number.',
   'হোম': 'Home', '⌂ হোম': '⌂ Home', 'পণ্যের বিস্তারিত': 'Products', 'চাষের পরামর্শ': 'Farming Advice', 'মেমো সার্চ': 'Memo Search',
   'বগুড়ার বিশ্বস্ত মাছের পোনা সরবরাহকারী': 'Bogura’s trusted fish fingerling supplier',
-  'সুস্থ পোনা, সমৃদ্ধ মাছ চাষ': 'Healthy fingerlings, successful fish farming',
-  'আপনার পুকুরের জন্য বেছে নিন উন্নতমানের ও সতেজ মাছের রেনু পোনা। মানসম্মত পোনা ও আন্তরিক পরামর্শে আমরা আছি আপনার পাশে।': 'Choose high-quality, fresh fingerlings for your pond. We are here with quality fingerlings and friendly farming advice.',
-  'পণ্য দেখুন': 'View Products', 'এখনই ফোন করুন': 'Call Now', 'যত্নসহকারে পোনা বাছাই': 'Carefully selected fingerlings', 'চাষে অভিজ্ঞ পরামর্শ': 'Expert farming advice',
+  'পরিচালক': 'Director', 'মোঃ ময়নুল সাদিক (জোহা)': 'Md. Moinul Sadiq (Joha)',
+  'পণ্য দেখুন': 'View Products', 'এখনই ফোন করুন': 'Call Now',
   'বিশ্বাসের সাথে চাষ করুন': 'Farm with confidence', 'আপনার সাফল্যই আমাদের অঙ্গীকার': 'Your success is our promise', 'নির্বাচিত': 'Selected',
   'আমাদের ঠিকানা': 'Our Address', 'জগন্নাথপুর (হাজির বাজার), বগুড়া': 'Jagannathpur (Hazir Bazar), Bogura', 'পণ্যের নিশ্চয়তা': 'Product Quality', 'উন্নতমানের রেনু ও পোনা': 'High-quality fry and fingerlings', 'ফোনে যোগাযোগ': 'Contact by Phone',
-  'আপনার পাশে আমরা': 'We are here for you', 'সঠিক পোনা বাছাই,': 'Choose the right fingerlings,', 'সফল চাষের প্রথম ধাপ': 'the first step to successful farming',
-  'সঠিক পোনা বাছাই, সফল চাষের প্রথম ধাপ': 'Choosing the right fingerlings is the first step to successful farming',
-  'পুকুরের আকার, পানির অবস্থা ও চাষের উদ্দেশ্য অনুযায়ী পোনা নির্বাচন করুন। পোনা ছাড়ার আগে পুকুর প্রস্তুত রাখুন এবং পরিবহনের পর ধীরে ধীরে পানির সঙ্গে মানিয়ে নিন। পরামর্শের জন্য আমাদের সাথে কথা বলুন।': 'Choose fingerlings according to your pond size, water conditions, and farming goals. Prepare the pond before stocking and gradually acclimatize the fingerlings after transport. Contact us for advice.',
   'পরামর্শ নিন': 'Get Advice', 'মৎস্য চাষের ছবি': 'Fish farming photos', 'আমাদের পণ্য': 'Our Products', 'আপনার পুকুরের জন্য সেরা পোনা': 'The best fingerlings for your pond',
   'সহজে খুঁজে নিন': 'Find it easily', 'আপনার মেমো দেখুন': 'Check Your Memo', 'মেমোর ক্রমিক নম্বর লিখে পেমেন্টের অবস্থা দেখে নিন।': 'Enter your memo number to check its payment status.', 'মেমো নম্বর': 'Memo Number',
-  'মেমো খুঁজুন': 'Search Memo', 'জিহান মৎস্য বীজাগার': 'Jihan Fish Hatchery', 'বিশ্বস্ততায়, মানসম্মত পোনায়': 'Trusted for quality fingerlings', 'ঠিকানা': 'Address', 'ফোন': 'Phone', 'পরিচালক': 'Director', 'ইনশাল্লাহ আবার আসবেন': 'We hope to see you again',
+  'মেমো খুঁজুন': 'Search Memo', 'জিহান মৎস্য বীজাগার': 'Jihan Fish Hatchery', 'বিশ্বস্ততায়, মানসম্মত পোনায়': 'Trusted for quality fingerlings', 'ঠিকানা': 'Address', 'ফোন': 'Phone', 'পরিচালক': 'Director',
   'নিরাপদ প্রবেশ': 'Secure Login', 'অ্যাডমিন প্যানেল': 'Admin Panel', 'আপনার অ্যাকাউন্ট দিয়ে প্রবেশ করুন': 'Sign in to your account', 'ইউজার আইডি': 'User ID', 'পাসওয়ার্ড': 'Password', 'লগইন করুন': 'Log In', 'প্রাথমিক লগইন: admin / admin': 'Default login: admin / admin', 'ব্যবস্থাপনা': 'Management', 'অ্যাডমিন কন্ট্রোল': 'Admin Control', 'স্বাগতম,': 'Welcome,', 'লগআউট': 'Log Out',
   'পণ্য নিয়ন্ত্রণ': 'Products', 'মেমো তৈরি': 'Create Memo', 'মেমো সমূহ': 'Memos', 'মেমোসমূহ': 'Memos', 'অ্যাডমিন নিয়ন্ত্রণ': 'Admin Management', 'সাইট সেটিংস': 'Site Settings', 'অপরিশোধ গ্রাহক': 'Unpaid Customer', 'অপরিশোধ গ্রাহকদের তালিকা': 'Unpaid Customers', 'গ্রাহকের তথ্য': 'Customer Information', 'গ্রাহকের তথ্য ও সংশ্লিষ্ট মেমো শুধু দেখা যাবে; সম্পাদনা বা মুছে ফেলার অপশন নেই।': 'Customer details and related memos are view-only; editing and deleting are disabled.', 'বিস্তারিত দেখতে গ্রাহক নির্বাচন করুন।': 'Select a customer to view details.', 'মোট মেমো': 'Total Memos', 'সর্বশেষ মেমো': 'Latest Memo', 'টি মেমো': 'memos', 'এখনো কোনো গ্রাহকের তথ্য নেই।': 'No customer information yet.', 'মেমোর তথ্য': 'Memo Details', 'জমার বিবরণ': 'Payment Details', 'বিস্তারিত দেখতে গ্রাহক নির্বাচন করুন।': 'Select a customer to view details.', 'বাকি গ্রাহকদের তালিকা': 'Customers with Outstanding Balances', 'যেসব মেমোতে বাকি আছে, সেসব গ্রাহকের যোগাযোগের তথ্য দেখুন': 'View contact details for customers with unpaid memo balances', 'A4 কাগজে প্রিন্ট করুন': 'Print on A4 Paper', 'মেমো নং': 'Memo No.', 'তারিখ': 'Date', 'গ্রাহকের নাম': 'Customer Name', 'ফোন নম্বর': 'Phone Number', 'ঠিকানা': 'Address', 'বাকি টাকা': 'Amount Due', 'কোনো বাকি গ্রাহক নেই।': 'No customers have an outstanding balance.', 'বাকি প্রিভিউ': 'Due Preview', 'প্রিভিউ বন্ধ': 'Hide Preview', 'কেনা পণ্য': 'Purchased Products', 'বাকি ও জমার বিবরণ': 'Due and Payment Details', 'মেমোর তারিখ': 'Memo Date', 'মোট জমা': 'Total Paid', 'বর্তমান বাকি': 'Current Due', 'জমার তারিখ ও পরিমাণ': 'Payment Dates and Amounts', 'প্রাথমিক জমা': 'Initial Payment', 'এখনো কোনো টাকা জমা হয়নি': 'No payments have been made yet.',
   'প্রোডাক্ট ডিটেলস কন্ট্রোল': 'Product Details', 'পণ্য যোগ, সম্পাদনা ও মুছে ফেলুন': 'Add, edit, or delete products', '＋ নতুন পণ্য': '+ Add Product', 'নতুন পণ্য যোগ': 'Add New Product', 'পণ্যের নাম': 'Product Name', 'দর (টাকা/কেজি)': 'Price (Tk/kg)', 'ছবির লিংক': 'Image URL', 'অথবা ছবি আপলোড': 'Or Upload Image', 'ছোট বিবরণ': 'Short Description', 'সংরক্ষণ করুন': 'Save', 'বাতিল': 'Cancel', 'পণ্য সম্পাদনা': 'Edit Product', 'সম্পাদনা': 'Edit', 'মুছুন': 'Delete', 'এখনো কোনো পণ্য নেই।': 'No products yet.', 'দর নির্ধারিত নয়': 'Price not set', 'দর জানতে ফোন করুন': 'Call for price', 'যোগাযোগ': 'Contact', 'দর নেই': 'No price', 'নির্বাচন': 'Select', 'আগে পণ্য যোগ করুন।': 'Add a product first.', 'পণ্য নির্বাচন': 'Select Product', 'পণ্য যোগ': 'Add Product',
@@ -251,7 +257,9 @@ function actionDialog({ title, message = '', fields = [], submitText = 'নি�
   $('actionDialogSubmit').textContent = submitText;
   $('actionDialogSubmit').classList.toggle('button-danger', danger);
   $('actionDialogFields').innerHTML = fields.map(field => {
-    const control = Array.isArray(field.options) && field.name === 'paymentStatus'
+    const control = field.type === 'file'
+      ? `<input name="${escapeHTML(field.name)}" type="file" accept="${escapeHTML(field.accept || '*/*')}" ${field.required === false ? '' : 'required'} />`
+      : Array.isArray(field.options) && field.name === 'paymentStatus'
       ? `<div class="payment-status-options" role="radiogroup" aria-label="${escapeHTML(field.label)}">${field.options.map(option => {
         const isPaid = option.value === 'paid';
         const checked = String(option.value) === String(field.value) ? 'checked' : '';
@@ -298,9 +306,17 @@ function nextMemoNumber() {
   return Math.max(stored || 1001, last + 1);
 }
 function setupImage(image, src, alt) {
-  if (!src) { image.removeAttribute('src'); image.style.display = 'none'; return; }
-  image.style.display = 'block'; image.src = src; image.alt = alt;
-  image.onerror = () => { image.style.display = 'none'; };
+  if (!image) return;
+  const fallback = fallbackHeroImage;
+  image.style.display = 'block';
+  image.alt = alt;
+  image.onerror = () => {
+    if (image.dataset.fallbackApplied === 'true') return;
+    image.dataset.fallbackApplied = 'true';
+    image.src = fallback;
+  };
+  image.dataset.fallbackApplied = src === fallback ? 'true' : 'false';
+  image.src = src || fallback;
 }
 let heroSlideTimer = null;
 let activeHeroSlide = 0;
@@ -309,7 +325,7 @@ function showHeroSlide(index) {
   const slides = (settings.heroSlides || []).filter(Boolean);
   if (!slides.length) {
     image.classList.remove('hero-zoom');
-    setupImage(image, settings.heroImage, 'মৎস্য চাষ');
+    setupImage(image, settings.heroImage || fallbackHeroImage, 'মৎস্য চাষ');
     return;
   }
   activeHeroSlide = index % slides.length;
@@ -322,7 +338,7 @@ function startHeroSlideshow() {
   clearInterval(heroSlideTimer);
   const slides = (settings.heroSlides || []).filter(Boolean);
   if (!slides.length) {
-    setupImage($('heroImage'), settings.heroImage, 'মৎস্য চাষ');
+    setupImage($('heroImage'), settings.heroImage || fallbackHeroImage, 'মৎস্য চাষ');
     return;
   }
   showHeroSlide(0);
@@ -330,19 +346,13 @@ function startHeroSlideshow() {
 }
 function renderHomepage() {
   $('heroTitle').textContent = settings.heroTitle;
-  $('heroText').textContent = settings.heroText;
-  $('adviceTitle').innerHTML = escapeHTML(settings.adviceTitle).replace(/, /g, ',<br />');
-  $('adviceText').textContent = settings.adviceText;
+  $('heroText').textContent = '';
+  if ($('adviceTitle')) $('adviceTitle').innerHTML = '';
+  if ($('adviceText')) $('adviceText').textContent = '';
   startHeroSlideshow();
-  const gallery = $('heroGallery');
-  gallery.innerHTML = (settings.gallery || ['', '', '']).slice(0, 3).map((src, i) => `<button class="gallery-item" type="button" data-gallery="${i}" aria-label="ছবি ${i + 1} দেখুন">${src ? `<img src="${escapeHTML(src)}" alt="মৎস্য চাষের ছবি" onerror="this.style.display='none'">` : `<span class="gallery-placeholder">${fishEmoji[i]}</span>`}</button>`).join('');
-  gallery.querySelectorAll('.gallery-item').forEach(button => button.addEventListener('click', () => {
-    const src = settings.gallery[Number(button.dataset.gallery)];
-    if (src) openImage(src);
-    else toast('ছবি যোগ করতে অ্যাডমিন প্যানেলের সাইট সেটিংস ব্যবহার করুন।');
-  }));
-  $('productCount').textContent = `${products.length.toLocaleString('bn-BD')} ধরনের পোনা`;
-  $('productGrid').innerHTML = products.map((product, index) => `<article class="product-card"><div class="product-image">${product.image ? `<img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" onerror="this.style.display='none'">` : `<div class="fish-symbol">${fishEmoji[index % fishEmoji.length]}</div>`}</div><div class="product-card-info"><h3>${escapeHTML(product.name)}</h3><p>${escapeHTML(product.description || 'উন্নতমানের রেনু পোনা')}</p><div class="product-card-bottom"><span class="product-price">${Number(product.price) > 0 ? `${money(product.price)} <small>/ কেজি</small>` : 'দর জানতে ফোন করুন'}</span><button type="button" data-product-call="${escapeHTML(product.name)}">যোগাযোগ</button></div></div></article>`).join('');
+  settings.gallery = ['', '', ''];
+  if ($('productCount')) $('productCount').textContent = `${products.length.toLocaleString('bn-BD')} ধরনের পোনা`;
+  $('productGrid').innerHTML = products.map((product, index) => `<article class="product-card"><div class="product-image">${product.image ? `<img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling?.classList.remove('hidden')"><div class="fish-symbol hidden">${fishEmoji[index % fishEmoji.length]}</div>` : `<div class="fish-symbol">${fishEmoji[index % fishEmoji.length]}</div>`}</div><div class="product-card-info"><h3>${escapeHTML(product.name)}</h3><p>${escapeHTML(product.description || 'উন্নতমানের রেনু পোনা')}</p><div class="product-card-bottom"><span class="product-price">${Number(product.price) > 0 ? `${money(product.price)} <small>/ কেজি</small>` : 'দর জানতে ফোন করুন'}</span><button type="button" data-product-call="${escapeHTML(product.name)}">যোগাযোগ</button></div></div></article>`).join('');
   document.querySelectorAll('[data-product-call]').forEach(button => button.addEventListener('click', () => { window.location.href = 'tel:+8801722736633'; }));
 }
 function openImage(src) {
@@ -360,16 +370,56 @@ function renderAdminProducts() {
     if (p && confirm(`${p.name} পণ্যটি মুছে ফেলবেন?`)) { products = products.filter(item => item.id !== p.id); save(STORE.products, products); renderAdminProducts(); renderHomepage(); toast('পণ্য মুছে ফেলা হয়েছে।'); }
   }));
 }
-function editProduct(id) {
+async function editProduct(id) {
   if (!hasAdminAccess('productsAdmin')) return;
-  const p = products.find(item => item.id === id); if (!p) return;
-  $('productId').value = p.id; $('productName').value = p.name; $('productPrice').value = p.price || '';
-  $('productImage').value = p.image?.startsWith('data:') ? '' : (p.image || ''); $('productDescription').value = p.description || '';
-  $('productImageFile').value = ''; $('productFormTitle').textContent = 'পণ্য সম্পাদনা'; $('productForm').classList.remove('hidden');
-  $('productForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const product = products.find(item => item.id === id);
+  if (!product) return;
+  const response = await actionDialog({
+    title: 'পণ্য সম্পাদনা',
+    message: `${product.name} পণ্যের তথ্য পরিবর্তন করুন।`,
+    submitText: 'সংরক্ষণ করুন',
+    fields: [
+      { name: 'name', label: 'পণ্যের নাম', value: product.name },
+      { name: 'price', label: 'দর (টাকা/কেজি)', type: 'number', value: product.price || '', min: '0', step: '0.01' },
+      { name: 'imageUrl', label: 'ছবির লিংক', type: 'url', value: product.image?.startsWith('data:') ? '' : (product.image || ''), required: false },
+      { name: 'imageFile', label: 'অথবা ছবি আপলোড', type: 'file', accept: 'image/*', required: false },
+      { name: 'description', label: 'ছোট বিবরণ', value: product.description || '', required: false }
+    ]
+  });
+  if (!response || !hasAdminAccess('productsAdmin')) return;
+  let image = response.imageUrl.trim() || product.image || '';
+  if (response.imageFile?.size) {
+    try {
+      image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = reject;
+        reader.readAsDataURL(response.imageFile);
+      });
+    } catch {
+      toast('ছবিটি পড়া যায়নি। অন্য ছবি নির্বাচন করুন।');
+      return;
+    }
+  }
+  const updated = { ...product, name: response.name.trim(), price: Number(response.price), image, description: response.description.trim() };
+  const index = products.findIndex(item => item.id === id);
+  if (index < 0) return;
+  const previous = products[index];
+  products[index] = updated;
+  try {
+    save(STORE.products, products);
+  } catch {
+    products[index] = previous;
+    toast('পণ্য সংরক্ষণ করা যায়নি। ব্রাউজারের স্টোরেজ পরীক্ষা করুন।');
+    return;
+  }
+  renderAdminProducts();
+  renderHomepage();
+  renderPicker();
+  toast('পণ্য সংরক্ষণ হয়েছে।');
 }
 function renderPicker() {
-  $('memoProductPicker').innerHTML = products.map((product, index) => `<article class="product-card memo-pick-card" data-pick-product="${escapeHTML(product.id)}"><div class="product-image">${product.image ? `<img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" onerror="this.style.display='none'">` : `<div class="fish-symbol">${fishEmoji[index % fishEmoji.length]}</div>`}</div><div class="product-card-info"><h3>${escapeHTML(product.name)}</h3><p>${escapeHTML(product.description || 'উন্নতমানের রেনু পোনা')}</p><div class="product-card-bottom"><span class="product-price">${Number(product.price) > 0 ? `${money(product.price)} <small>/ কেজি</small>` : 'দর জানতে ফোন করুন'}</span><button type="button">নির্বাচন</button></div></div></article>`).join('') || '<div class="empty-state">আগে পণ্য যোগ করুন।</div>';
+  $('memoProductPicker').innerHTML = products.map((product, index) => `<article class="product-card memo-pick-card" data-pick-product="${escapeHTML(product.id)}"><div class="product-image">${product.image ? `<img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling?.classList.remove('hidden')"><div class="fish-symbol hidden">${fishEmoji[index % fishEmoji.length]}</div>` : `<div class="fish-symbol">${fishEmoji[index % fishEmoji.length]}</div>`}</div><div class="product-card-info"><h3>${escapeHTML(product.name)}</h3><p>${escapeHTML(product.description || 'উন্নতমানের রেনু পোনা')}</p><div class="product-card-bottom"><span class="product-price">${Number(product.price) > 0 ? `${money(product.price)} <small>/ কেজি</small>` : 'দর জানতে ফোন করুন'}</span><button type="button">নির্বাচন</button></div></div></article>`).join('') || '<div class="empty-state">আগে পণ্য যোগ করুন।</div>';
   $('memoProductPicker').querySelectorAll('.memo-pick-card').forEach(card => card.addEventListener('click', () => addItem(card.dataset.pickProduct)));
   const memoNumber = nextMemoNumber().toLocaleString('bn-BD');
   $('nextMemoId').textContent = memoNumber;
@@ -409,8 +459,12 @@ function updateMemoTotal() {
   const discount = Math.min(subtotal, Math.max(0, Number($('discountAmount').value) || 0));
   const balanceAfterDiscount = Math.max(0, subtotal - discount);
   const advance = Math.min(balanceAfterDiscount, Math.max(0, Number($('advanceAmount').value.replace(',', '.')) || 0));
-  $('memoSubtotal').textContent = money(subtotal);
-  $('memoDue').textContent = money(Math.max(0, balanceAfterDiscount - advance));
+  const subtotalText = money(subtotal);
+  const dueText = money(Math.max(0, balanceAfterDiscount - advance));
+
+  // একই লেখা আবার বসালে MutationObserver অপ্রয়োজনীয়ভাবে পুনরায় চালু হতে পারে।
+  if ($('memoSubtotal').textContent !== subtotalText) $('memoSubtotal').textContent = subtotalText;
+  if ($('memoDue').textContent !== dueText) $('memoDue').textContent = dueText;
 }
 function normalizePhone(phone) { return String(phone || '').replace(/[\s-]/g, ''); }
 function fillCustomer(phone) {
@@ -545,7 +599,7 @@ function bindHeroSlideSetting(index, urlId, fileId) {
 }
 function populateSettingsForm() {
   $('siteDefaultLanguage').value = settings.language || 'bn';
-  $('settingHeroTitle').value = settings.heroTitle; $('settingHeroText').value = settings.heroText;
+  $('settingHeroTitle').value = settings.heroTitle; $('settingHeroText').value = '';
   $('settingHeroImage').value = settings.heroSlides[0]?.startsWith('data:') ? '' : (settings.heroSlides[0] || settings.heroImage || '');
   $('settingHeroImageFile').value = '';
   bindHeroSlideSetting(0, 'settingHeroImage', 'settingHeroImageFile');
@@ -555,8 +609,13 @@ function populateSettingsForm() {
     $(`heroSlideFile${i}`).value = '';
     bindHeroSlideSetting(i - 1, `heroSlideUrl${i}`, `heroSlideFile${i}`);
   }
-  $('settingAdviceTitle').value = settings.adviceTitle; $('settingAdviceText').value = settings.adviceText;
-  (settings.gallery || []).forEach((image, i) => { $(`galleryImage${i + 1}`).value = image?.startsWith('data:') ? '' : (image || ''); $(`galleryFile${i + 1}`).value = ''; });
+  $('settingAdviceTitle').value = ''; $('settingAdviceText').value = '';
+  (settings.gallery || []).forEach((image, i) => {
+    const galleryImage = $(`galleryImage${i + 1}`);
+    const galleryFile = $(`galleryFile${i + 1}`);
+    if (galleryImage) galleryImage.value = image?.startsWith('data:') ? '' : (image || '');
+    if (galleryFile) galleryFile.value = '';
+  });
   renderPublicCopyEditor();
 }
 function memoDue(memo) {
@@ -889,7 +948,7 @@ function printMemo(id, previewOnly = false) {
   memoUrl.hash = `memo=${encodeURIComponent(memo.id)}`;
   const qrImage = qrCodeDataUrl(memoUrl.href);
   let area = $('printArea'); if (!area) { area = document.createElement('div'); area.id = 'printArea'; document.body.appendChild(area); }
-  area.innerHTML = `<div class="print-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div><h1 class="print-title">জিহান মৎস্য বীজাগার</h1><div class="print-address">জগন্নাথপুর (হাজির বাজার), মোকামতলা, বগুড়া-৫৮১০</div><div class="print-address">ফোন: +8801722736633, +8801711428073</div><div class="print-director">পরিচালক: মোঃ ময়নুল সাদিক (জোহা)</div><div class="print-director">এখানে উন্নতমানের রুই, মৃগেল, কাতলা, বাটা, সীলভার, গ্লাসকাপ, স্বরপুটি, পাঙ্গাস, হাংরি, দেশী মাগুর, কৈ, টেংরা, গুলশা, পাবদা মাছের রেনু পোনা পাওয়া যায়</div><hr class="print-rule"><div class="print-memo-head"><div class="print-memo-id">মেমো নং: ${escapeHTML(memo.id)}</div><div class="print-date">তারিখ: ${escapeHTML(memo.date)}</div><div class="print-created">তৈরি করেছেন: ${escapeHTML(memo.createdBy)}</div><div class="print-status">${memoDue(memo) > 0 ? 'বাকি' : 'পরিশোধ'}</div>${qrImage ? `<div class="print-qr"><img src="${escapeHTML(qrImage)}" alt="মেমো দেখার QR কোড"><small>স্ক্যান করে মেমো দেখুন</small></div>` : ''}</div><div class="print-customer"><strong>নাম:</strong> ${escapeHTML(memo.customerName || '—')}<br><strong>ঠিকানা:</strong> ${escapeHTML(memo.address || '—')}<br><strong>ফোন:</strong> ${escapeHTML(memo.phone || '—')}</div><table class="print-table"><thead><tr><th>পণ্যের নাম</th><th>পরিমাণ</th><th>দর</th><th>টাকা</th></tr></thead><tbody>${memo.items.map(item => `<tr><td>${escapeHTML(item.name)}</td><td>${item.quantity.toLocaleString('bn-BD')} কেজি</td><td>${money(item.price)}</td><td>${money(item.quantity * item.price)}</td></tr>`).join('')}</tbody></table><div class="print-totals"><div><span>সর্বমোট</span><strong>${money(memo.total)}</strong></div><div><span>অগ্রিম জমা</span><strong>${money(memo.advance)}</strong></div><div><span>ডিসকাউন্ট</span><strong>${money(memo.discount)}</strong></div><div class="grand"><span>বাকি</span><strong>${money(memoDue(memo))}</strong></div></div>${memo.paidBy ? `<div class="print-user">পরিশোধ গ্রহণকারী: ${escapeHTML(memo.paidBy)}</div>` : ''}<div class="print-thanks">ইনশাল্লাহ আবার আসবেন</div><div class="print-footer">এখানে মাছের খাদ্যদ্রব্য মাছের ফিট ঔষধ মাছের যাবতীয় জিনিসপত্র পাওয়া যায় ।</div>`;
+  area.innerHTML = `<div class="print-bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div><h1 class="print-title">জিহান মৎস্য বীজাগার</h1><div class="print-address">জগন্নাথপুর (হাজির বাজার), মোকামতলা, বগুড়া-৫৮১০</div><div class="print-address">ফোন: +8801722736633, +8801711428073</div><div class="print-director">পরিচালক: মোঃ ময়নুল সাদিক (জোহা)</div><div class="print-director">এখানে উন্নতমানের রুই, মৃগেল, কাতলা, বাটা, সীলভার, গ্লাসকাপ, স্বরপুটি, পাঙ্গাস, হাংরি, দেশী মাগুর, কৈ, টেংরা, গুলশা, পাবদা মাছের রেনু পোনা পাওয়া যায়</div><hr class="print-rule"><div class="print-memo-head"><div class="print-memo-id">মেমো নং: ${escapeHTML(memo.id)}</div><div class="print-date">তারিখ: ${escapeHTML(memo.date)}</div><div class="print-created">তৈরি করেছেন: ${escapeHTML(memo.createdBy)}</div><div class="print-status">${memo.paymentStatus === 'due' || (!memo.paymentStatus && memoDue(memo) > 0) ? 'বাকি' : 'পরিশোধ'}</div>${qrImage ? `<div class="print-qr"><img src="${escapeHTML(qrImage)}" alt="মেমো দেখার QR কোড"><small>স্ক্যান করে মেমো দেখুন</small></div>` : ''}</div><div class="print-customer"><strong>নাম:</strong> ${escapeHTML(memo.customerName || '—')}<br><strong>ঠিকানা:</strong> ${escapeHTML(memo.address || '—')}<br><strong>ফোন:</strong> ${escapeHTML(memo.phone || '—')}</div><table class="print-table"><thead><tr><th>পণ্যের নাম</th><th>পরিমাণ</th><th>দর</th><th>টাকা</th></tr></thead><tbody>${memo.items.map(item => `<tr><td>${escapeHTML(item.name)}</td><td>${item.quantity.toLocaleString('bn-BD')} কেজি</td><td>${money(item.price)}</td><td>${money(item.quantity * item.price)}</td></tr>`).join('')}</tbody></table><div class="print-totals"><div><span>সর্বমোট</span><strong>${money(memo.total)}</strong></div><div><span>অগ্রিম জমা</span><strong>${money(memo.advance)}</strong></div><div><span>ডিসকাউন্ট</span><strong>${money(memo.discount)}</strong></div><div class="grand"><span>বাকি</span><strong>${money(memoDue(memo))}</strong></div></div>${memo.paidBy ? `<div class="print-user">পরিশোধ গ্রহণকারী: ${escapeHTML(memo.paidBy)}</div>` : ''}<div class="print-footer">এখানে মাছের খাদ্যদ্রব্য মাছের ফিট ঔষধ মাছের যাবতীয় জিনিসপত্র পাওয়া যায় ।</div>`;
   if (previewOnly) {
     $('memoPreview').innerHTML = area.innerHTML;
     $('memoPreview').classList.remove('hidden');
@@ -942,6 +1001,7 @@ function createAndSaveMemo(event) {
     items: selectedItems.map(item => ({ ...item })),
     total: subtotal, discount, advance: advanceInput,
     due: Math.max(0, balanceAfterDiscount - advanceInput),
+    paymentStatus: $('paymentStatus').value,
     createdBy: activeAdmin?.name || 'অ্যাডমিন'
   };
   const phoneKey = normalizePhone(memo.phone);
@@ -1070,7 +1130,7 @@ $('createMemoButton').addEventListener('click', () => {
     : Math.min(balanceAfterDiscount, Math.max(0, Number($('advanceAmount').value) || 0));
   const due = Math.max(0, balanceAfterDiscount - advance);
   const memoDate = new Date().toLocaleDateString('bn-BD');
-  pendingMemo = { id: nextMemoNumber(), date: memoDate, createdBy: activeAdmin?.name || 'অ্যাডমিন', phone, customerName: name, address, items: selectedItems.map(item => ({ ...item })), total, advance, discount, due, paidBy: '', paymentHistory: advance > 0 ? [{ date: memoDate, amount: advance, receivedBy: activeAdmin?.name || 'অ্যাডমিন' }] : [] };
+  pendingMemo = { id: nextMemoNumber(), date: memoDate, createdBy: activeAdmin?.name || 'অ্যাডমিন', phone, customerName: name, address, items: selectedItems.map(item => ({ ...item })), total, advance, discount, due, paymentStatus: $('paymentStatus').value, paidBy: '', paymentHistory: advance > 0 ? [{ date: memoDate, amount: advance, receivedBy: activeAdmin?.name || 'অ্যাডমিন' }] : [] };
   $('saveMemoButton').disabled = false;
   $('memoSaveStatus').textContent = 'মেমো তৈরি হয়েছে—প্রিভিউ দেখুন।';
   printMemo(pendingMemo.id, true);
@@ -1150,7 +1210,11 @@ $('siteSettingsForm').addEventListener('submit', async event => {
     settings.heroTitle = $('settingHeroTitle').value.trim(); settings.heroText = $('settingHeroText').value.trim();
     settings.heroImage = await selectedImage($('settingHeroImageFile'), $('settingHeroImage'), settings.heroImage);
     settings.adviceTitle = $('settingAdviceTitle').value.trim(); settings.adviceText = $('settingAdviceText').value.trim();
-    for (let i = 0; i < 3; i++) settings.gallery[i] = await selectedImage($(`galleryFile${i + 1}`), $(`galleryImage${i + 1}`), settings.gallery[i] || '');
+    for (let i = 0; i < 3; i++) {
+      const galleryFile = $(`galleryFile${i + 1}`);
+      const galleryImage = $(`galleryImage${i + 1}`);
+      if (galleryFile && galleryImage) settings.gallery[i] = await selectedImage(galleryFile, galleryImage, settings.gallery[i] || '');
+    }
     const publicCopy = {};
     $('publicCopyEditor').querySelectorAll('[data-public-copy]').forEach(input => {
       const entry = publicTextNodes.find(item => item.key === input.dataset.publicCopy);
